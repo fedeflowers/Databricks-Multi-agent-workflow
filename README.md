@@ -3,7 +3,7 @@
 Example of multi agent workflow in databricks
 
 ## 1. System Overview
-An enterprise multi-agent system designed for Prada Shop Managers to access localized inventory, sales, and visual merchandising data using native Databricks tools. The system utilizes a hub-and-spoke orchestration model where a Supervisor routes queries to specialized agents.
+An enterprise multi-agent system designed for Shop Managers to access localized inventory, sales, and visual merchandising data using native Databricks tools. The system utilizes a hub-and-spoke orchestration model where a Supervisor routes queries to specialized agents.
 
 ## 2. Project Structure
 
@@ -58,7 +58,7 @@ The system maintains an `AgentState` containing the query, message history, rout
 - **Implementation**: Performs similarity searches on a Databricks Vector Search index using `DatabricksVectorSearch`.
 
 ### 💡 Creative Analyst (`src/agents/creative_analyst.py`)
-- **Core Technology**: [Unity Catalog Functions](https://docs.databricks.com/en/udf/unity-catalog-functions.html) & Tool Calling.
+- **Core Technology**: Unity Catalog Functions & Tool Calling.
 - **Function**: Complex sales analysis and multi-table interrogation.
 - **Implementation**: Uses `UCFunctionToolkit` to wrap SQL/Python functions as LangChain tools. It operates as a ReAct agent to autonomously find product details before running analysis.
 
