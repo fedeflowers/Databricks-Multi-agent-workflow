@@ -1,7 +1,6 @@
 # Databricks-Multi-agent-workflow: Prada Localized Shop Analytics (PLSA)
 
-**Version:** 2.0.0 (2026)
-**Owner:** Prada Group - Global AI Engineering
+Example of multi agent workflow in databricks
 
 ## 1. System Overview
 An enterprise multi-agent system designed for Prada Shop Managers to access localized inventory, sales, and visual merchandising data using native Databricks tools. The system utilizes a hub-and-spoke orchestration model where a Supervisor routes queries to specialized agents.
