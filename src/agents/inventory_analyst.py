@@ -1,12 +1,13 @@
 import mlflow
+from src.utils.config_loader import CONFIG
 
-def get_inventory_data(site_id: str, sku: str):
-    """Retrieves localized inventory data via Genie Spaces."""
+def inventory_analyst_node(state):
+    """LangGraph node for inventory analysis."""
+    query = state.get("query", "")
     with mlflow.trace(name="Inventory_Analyst_Query") as trace:
-        print(f"Querying inventory for site {site_id}, SKU {sku}...")
-        # Implement Genie Space interaction here
-        return {"inventory_level": 100, "status": "In Stock"}
-
-if __name__ == "__main__":
-    # Test call
-    print(get_inventory_data("MILAN_01", "PRADA_BAG_001"))
+        print(f"Inventory Analyst processing: {query}")
+        # Logic to call Genie Space via Managed MCP
+        # placeholder logic
+        res = f"Inventory check for {query}: 100 units available."
+        state["messages"].append({"role": "assistant", "content": res, "name": "Inventory_Analyst"})
+    return state

@@ -1,0 +1,20 @@
+# PLSA Configuration
+
+system:
+  project_name: "Prada Localized Shop Analytics"
+  version: "1.0.0"
+  log_level: "INFO"
+
+agents:
+  supervisor:
+    model: "databricks-meta-llama-3-1-70b-instruct"
+  inventory_analyst:
+    genie_space: "catalog.schema.prada_genie"
+  visual_merchandiser:
+    vector_search_index: "catalog.schema.guidelines_index"
+  creative_analyst:
+    mcp_endpoint: "https://mcp-viz-prada.databricksapps.com/api/mcp"
+
+mlflow:
+  tracking_uri: "databricks"
+  experiment_path: "/Shared/PLSA_Experiment"
