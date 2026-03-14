@@ -1,0 +1,11 @@
+# Databricks Asset Bundle (DAB) Configuration
+# Documentation: https://docs.databricks.com/en/dev-tools/bundles/index.html
+
+bundle:
+  name: Databricks-Multi-agent-workflow
+
+targets:
+  dev:
+    workspace:
+      host: https://<workspace-instance>.cloud.databricks.com
+    # Define assets and variables for the dev target here
