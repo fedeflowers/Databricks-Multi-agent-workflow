@@ -1,3 +1,9 @@
+import os
+from dotenv import load_dotenv
+
+# Load environment variables before any other imports
+load_dotenv()
+
 import mlflow
 import json
 from typing import TypedDict, List, Dict, Union
@@ -7,6 +13,9 @@ from utils.config_loader import CONFIG
 from agents.inventory_analyst import inventory_analyst_node
 from agents.visual_merchandiser import visual_merchandiser_node
 from agents.creative_analyst import creative_analyst_node
+
+# Enable global MLflow tracing for LangChain components
+mlflow.langchain.autolog()
 
 # Define Graph State
 class AgentState(TypedDict):
@@ -107,7 +116,22 @@ PLSA_APP = create_workflow()
 
 def run_agent(query: str):
     """Runs the multi-agent system for a given query."""
-    mlflow.set_tracking_uri(CONFIG["mlflow"]["tracking_uri"])
+    # Prioritize Environment Variables for MLflow
+    tracking_uri = os.environ.get("MLFLOW_TRACKING_URI") or CONFIG.get("mlflow", {}).get("tracking_uri", "databricks")
+    mlflow.set_tracking_uri(tracking_uri)
+    
+    # Explicitly set the experiment
+    experiment_id = os.environ.get("MLFLOW_EXPERIMENT_ID")
+    experiment_path = os.environ.get("MLFLOW_EXPERIMENT_PATH") or CONFIG.get("mlflow", {}).get("experiment_path")
+    
+    try:
+        if experiment_id:
+            mlflow.set_experiment(experiment_id=experiment_id)
+        elif experiment_path:
+            mlflow.set_experiment(experiment_path)
+    except Exception as e:
+        print(f"Warning: Failed to set MLflow experiment: {e}")
+        # Continue execution even if tracing setup fails, or handle as needed
     
     initial_state = {
         "query": query,

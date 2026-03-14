@@ -21,12 +21,3 @@ agents:
       - "prada_catalog.plsa.query_sales"
       - "prada_catalog.plsa.query_inventory"
 
-mlflow:
-  tracking_uri: "databricks"
-  experiment_path: "/Shared/PLSA_Experiment"
-
-# Credentials will be injected via environment variables in Databricks Apps
-sql:
-  hostname: "${DATABRICKS_HOST}"
-  http_path: "${DATABRICKS_HTTP_PATH}"
-  token: "${DATABRICKS_TOKEN}"

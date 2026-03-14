@@ -1,6 +1,13 @@
+import os
+from dotenv import load_dotenv
+load_dotenv()
+
 import mlflow
 from utils.config_loader import CONFIG
 from databricks_langchain import GenieAgent
+
+mlflow.set_tracking_uri("databricks")
+mlflow.langchain.autolog() # Enables automatic tracing for LangChain components
 
 @mlflow.trace(name="Inventory_Analyst_Genie")
 def inventory_analyst_node(state):
@@ -11,13 +18,12 @@ def inventory_analyst_node(state):
     print(f"Inventory Analyst calling Genie Space: {space_id}")
     
     # Initialize Genie Agent
-    from utils.config_loader import get_ws_client
-    genie = GenieAgent(genie_space_id=space_id, workspace_client=get_ws_client())
+    genie = GenieAgent(genie_space_id=space_id)
     
     # Execute query
     try:
-        response = genie.invoke(query)
-        res = response.content
+        response = genie.invoke({"messages": [{"role": "user", "content": query}]})
+        res = response["messages"][-1].content
     except Exception as e:
         res = f"Error querying Genie Space: {str(e)}"
         

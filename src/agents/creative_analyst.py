@@ -1,9 +1,15 @@
+import os
+from dotenv import load_dotenv
+load_dotenv()
+
 import mlflow
 from utils.config_loader import CONFIG, get_ws_client
 from databricks_langchain.uc_ai import UCFunctionToolkit
 from databricks_langchain import ChatDatabricks
-from langchain.agents import create_tool_calling_agent, AgentExecutor
-from langchain import hub
+from langgraph.prebuilt import create_react_agent
+
+mlflow.set_tracking_uri("databricks")
+mlflow.langchain.autolog() # Enables automatic tracing for LangChain components
 
 @mlflow.trace(name="Creative_Analyst_UC")
 def creative_analyst_node(state):
@@ -16,25 +22,30 @@ def creative_analyst_node(state):
     
     try:
         # 1. Load UC functions as tools
-        from unitycatalog.ai.databricks import DatabricksFunctionClient
-        uc_client = DatabricksFunctionClient(workspace_client=get_ws_client())
         toolkit = UCFunctionToolkit(
             function_names=functions,
-            client=uc_client
+            workspace_client=get_ws_client()
         )
-        tools = toolkit.get_tools()
+        tools = toolkit.tools
         
         # 2. Initialize LLM
         llm = ChatDatabricks(endpoint=model_name)
         
-        # 3. Create Agent
-        prompt = hub.pull("hwchase17/openai-functions-agent")
-        agent = create_tool_calling_agent(llm, tools, prompt)
-        agent_executor = AgentExecutor(agent=agent, tools=tools, verbose=True)
+        # 3. Define System Prompt for the agent
+        system_prompt = (
+            "You are a Prada Creative Analyst. Your goal is to analyze product performance and sales.\n"
+            "If you need a 'product_id' or 'product_name' but don't have it, use 'query_products' first to find it.\n"
+            "NEVER pass 'null', 'None', or empty strings to required tool parameters. "
+            "If you cannot find a parameter value, ask the user for clarification instead of guessing."
+        )
         
-        # 4. Run Agent
-        result = agent_executor.invoke({"input": query})
-        res = result["output"]
+        # 4. Create Agent
+        # Use prompt or messages_modifier based on your langgraph version
+        agent = create_react_agent(llm, tools, prompt=system_prompt)
+        
+        # 5. Run Agent
+        result = agent.invoke({"messages": [{"role": "user", "content": query}]})
+        res = result["messages"][-1].content
         
     except Exception as e:
         res = f"Error in creative analysis: {str(e)}"

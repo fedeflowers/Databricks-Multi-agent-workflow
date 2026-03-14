@@ -1,7 +1,15 @@
+import os
+from dotenv import load_dotenv
+load_dotenv()
+
 import mlflow
 from utils.config_loader import CONFIG, get_ws_client
 from databricks_langchain import DatabricksVectorSearch
 from databricks_langchain import DatabricksEmbeddings
+
+mlflow.set_tracking_uri("databricks")
+mlflow.langchain.autolog() # Enables automatic tracing for LangChain components
+
 
 @mlflow.trace(name="Visual_Merchandiser_VS")
 def visual_merchandiser_node(state):
@@ -18,7 +26,7 @@ def visual_merchandiser_node(state):
         vector_store = DatabricksVectorSearch(
             index_name=index_name,
             endpoint=endpoint,
-            text_column="name"
+            workspace_client=get_ws_client()
         )
         
         # Simple similarity search

@@ -12,3 +12,5 @@ databricks-vectorsearch
 unitycatalog-langchain
 streamlit
 python-dotenv
+unitycatalog-ai[databricks]
+unitycatalog

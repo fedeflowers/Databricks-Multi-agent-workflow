@@ -1,12 +1,22 @@
-langgraph
-langchain
-langchain-community
-langchain-databricks
-databricks-langchain
-pyyaml
-mlflow
-pandas
-plotly
-databricks-sdk
-databricks-vectorsearch
-streamlit
+
+# Core Agent Orchestration
+langgraph>=1.1.2
+langchain>=1.2.0
+langchain-community>=0.3.0
+
+# Databricks Integration (Fixes NoOpSpan error)
+databricks-langchain>=0.17.0
+databricks-sdk>=0.30.0
+databricks-vectorsearch>=0.40.0
+unitycatalog-ai[databricks]>=0.2.0
+
+# Observability & Tracking
+mlflow>=2.20.0
+
+# UI & Visualization
+streamlit>=1.40.0
+plotly>=6.0.0
+
+# Utilities
+pyyaml>=6.0.1
+pandas>=2.2.0
