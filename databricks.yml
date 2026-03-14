@@ -1,6 +1,3 @@
-# Databricks Asset Bundle (DAB) Configuration
-# Documentation: https://docs.databricks.com/en/dev-tools/bundles/index.html
-
 bundle:
   name: Databricks-Multi-agent-workflow
   version: 1.0.0
@@ -29,9 +26,10 @@ assets:
     environment_variables:
       PRADA_CATALOG: prada_catalog
       PRADA_SCHEMA: plsa
-      DATABRICKS_HOST: ${secrets.db_host}
-      DATABRICKS_HTTP_PATH: ${secrets.db_http_path}
-      DATABRICKS_TOKEN: ${secrets.db_token}
+      # References the 'secrets' scope and keys you created via CLI
+      DATABRICKS_HOST: ${bundle.secrets.secrets.db_host}
+      DATABRICKS_HTTP_PATH: ${bundle.secrets.secrets.db_http_path}
+      DATABRICKS_TOKEN: ${bundle.secrets.secrets.db_token}
     permissions:
       - principal: managers
         level: CAN_RUN
@@ -41,11 +39,7 @@ assets:
 targets:
   dev:
     workspace:
-      host: https://<workspace-instance>.cloud.databricks.com
+      # Update this to your actual workspace URL
+      host: https://dbc-602e7a0c-98a0.cloud.databricks.com/
     assets:
       - mcp_server
-    variables:
-      secrets:
-        db_host: <YOUR_DATABRICKS_HOST>
-        db_http_path: <YOUR_SQL_HTTP_PATH>
-        db_token: <YOUR_PERSONAL_ACCESS_TOKEN>
