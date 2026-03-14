@@ -1,0 +1,23 @@
+# Files and directories to be ignored by Databricks Asset Bundles
+# These patterns follow .gitignore syntax
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+venv/
+.env
+
+# Git
+.git/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Databricks local state
+.bundle/
+
+# Project artifacts
+brain/
+*.dab
