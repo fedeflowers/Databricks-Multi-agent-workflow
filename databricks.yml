@@ -1,38 +1,31 @@
 bundle:
   name: Databricks-Multi-agent-workflow
-  assets:
-    mcp_server:
-      type: python_app
-      script: bundle/mcp_server/mcp_server.py
-      environment:
-        python: 3.11
-        requirements: requirements.txt
-      serving:
-        compute_kind: serverless
-        app_kind: REST
-        endpoints:
-          - /api/query_products
-          - /api/query_sales
-          - /api/query_inventory
-          - /api/query_employees
-          - /api/query_guidelines
-      environment_variables:
-        PRADA_CATALOG: prada_catalog
-        PRADA_SCHEMA: plsa
-        # References the 'secrets' scope and keys you created via CLI
-        DATABRICKS_HOST: ${bundle.secrets.secrets.db_host}
-        DATABRICKS_HTTP_PATH: ${bundle.secrets.secrets.db_http_path}
-        DATABRICKS_TOKEN: ${bundle.secrets.secrets.db_token}
-      permissions:
-        - principal: managers
-          level: CAN_RUN
-        - principal: ai_engineers
-          level: CAN_VIEW
+
+resources:
+  apps:
+    plsa-app:
+      name: "plsa-app"
+      description: "Prada Localized Shop Analytics - Multi-Agent Chatbot"
+      source_code_path: .
+      config:
+        command:
+          - "streamlit"
+          - "run"
+          - "src/app.py"
+      resources:
+        - name: "serving-endpoint"
+          description: "Serving endpoint for the LLM"
+          serving_endpoint:
+            name: "databricks-meta-llama-3-1-8b-instruct"
+            permission: CAN_QUERY
+        - name: "DATABRICKS_HTTP_PATH"
+          secret:
+            scope: "secrets"
+            key: "db_http_path"
+            permission: READ
 
 targets:
   dev:
     workspace:
-      # Update this to your actual workspace URL
+      # Update this to your actual workspace URL if needed, or use CLI config
       host: https://dbc-602e7a0c-98a0.cloud.databricks.com/
-    assets:
-      - mcp_server

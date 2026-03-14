@@ -57,3 +57,29 @@ CREATE TABLE IF NOT EXISTS guidelines_index (
 INSERT INTO guidelines_index VALUES
     ('g001', 'Always validate inputs.', array(0.12, 0.34, 0.56)),
     ('g002', 'Ensure data privacy.', array(0.21, 0.43, 0.65));
+
+
+
+-- Scalar function for product lookup (returns STRING)
+CREATE OR REPLACE FUNCTION prada_catalog.plsa.query_products(product_id STRING)
+RETURNS STRING
+LANGUAGE SQL
+RETURN (
+  (SELECT MIN(product_name) FROM prada_catalog.plsa.products WHERE product_id = query_products.product_id)
+);
+
+-- Scalar function for sales total (returns DOUBLE)
+CREATE OR REPLACE FUNCTION prada_catalog.plsa.query_sales(product_id STRING)
+RETURNS DOUBLE
+LANGUAGE SQL
+RETURN (
+  (SELECT SUM(sale_amount) FROM prada_catalog.plsa.sales WHERE product_id = query_sales.product_id)
+);
+
+-- Scalar function for inventory count (returns INT)
+CREATE OR REPLACE FUNCTION prada_catalog.plsa.query_inventory(product_id STRING)
+RETURNS INT
+LANGUAGE SQL
+RETURN (
+  (SELECT SUM(stock_level) FROM prada_catalog.plsa.inventory WHERE product_id = query_inventory.product_id)
+);

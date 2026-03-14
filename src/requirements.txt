@@ -9,4 +9,6 @@ pandas
 plotly
 databricks-sdk
 databricks-vectorsearch
+unitycatalog-langchain
 streamlit
+python-dotenv

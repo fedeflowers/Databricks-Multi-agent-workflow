@@ -1,13 +1,40 @@
 import mlflow
-from src.utils.config_loader import CONFIG
+from utils.config_loader import CONFIG, get_ws_client
+from databricks_langchain import DatabricksVectorSearch
+from databricks_langchain import DatabricksEmbeddings
 
+@mlflow.trace(name="Visual_Merchandiser_VS")
 def visual_merchandiser_node(state):
-    """LangGraph node for visual merchandising guidelines."""
+    """LangGraph node for visual merchandising guidelines using Vector Search."""
     query = state.get("query", "")
-    with mlflow.trace(name="Visual_Merchandiser_Search") as trace:
-        print(f"Visual Merchandiser processing: {query}")
-        # Logic to call Vector Search via Managed MCP
-        # placeholder logic
-        res = f"Visual guidelines for {query}: Use glass shelving."
-        state["messages"].append({"role": "assistant", "content": res, "name": "Visual_Merchandiser"})
+    endpoint = CONFIG["agents"]["visual_merchandiser"]["vector_search_endpoint"]
+    index_name = CONFIG["agents"]["visual_merchandiser"]["vector_search_index"]
+    
+    print(f"Visual Merchandiser searching index: {index_name}")
+    
+    try:
+        # Note: In a real Databricks environment, we'd use DatabricksEmbeddings 
+        # or the managed index directly.
+        vector_store = DatabricksVectorSearch(
+            index_name=index_name,
+            endpoint=endpoint,
+            text_column="name"
+        )
+        
+        # Simple similarity search
+        docs = vector_store.similarity_search(query, k=2)
+        
+        if docs:
+            res = "Based on Prada Visual Guidelines:\n" + "\n".join([f"- {d.page_content}" for d in docs])
+        else:
+            res = "No specific visual guidelines found for this query."
+            
+    except Exception as e:
+        res = f"Error searching visual guidelines: {str(e)}"
+        
+    state["messages"].append({
+        "role": "assistant", 
+        "content": res, 
+        "name": "Visual_Merchandiser"
+    })
     return state

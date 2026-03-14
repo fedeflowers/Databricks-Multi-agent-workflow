@@ -2,40 +2,31 @@
 
 system:
   project_name: "Prada Localized Shop Analytics"
-  version: "1.0.0"
+  version: "2.0.0"
   log_level: "INFO"
 
 agents:
   supervisor:
-    model: "databricks-meta-llama-3-1-70b-instruct"
+    model: "databricks-meta-llama-3-1-8b-instruct"
   inventory_analyst:
-    genie_space: "catalog.schema.prada_genie"
-    mcp_tool: "https://mcp-managed-prada.databricksapps.com/api/query_inventory"
+    genie_space_id: "01f11fb047c017cca3c6a3f707ef079a"
   visual_merchandiser:
-    vector_search_index: "catalog.schema.guidelines_index"
-    mcp_tool: "https://mcp-managed-prada.databricksapps.com/api/query_guidelines"
+    vector_search_endpoint: "prada_vs_endpoint"
+    vector_search_index: "prada_catalog.plsa.vector_search_employee"
   creative_analyst:
-    mcp_endpoint: "https://mcp-viz-prada.databricksapps.com/api/mcp"
     catalog: "prada_catalog"
     schema: "plsa"
-    tables:
-      - products
-      - sales
-      - inventory
-      - employees
-      - guidelines_index
-    mcp_tools:
-      products: "https://mcp-managed-prada.databricksapps.com/api/query_products"
-      sales: "https://mcp-managed-prada.databricksapps.com/api/query_sales"
-      inventory: "https://mcp-managed-prada.databricksapps.com/api/query_inventory"
-      employees: "https://mcp-managed-prada.databricksapps.com/api/query_employees"
-      guidelines_index: "https://mcp-managed-prada.databricksapps.com/api/query_guidelines"
+    uc_functions:
+      - "prada_catalog.plsa.query_products"
+      - "prada_catalog.plsa.query_sales"
+      - "prada_catalog.plsa.query_inventory"
 
 mlflow:
   tracking_uri: "databricks"
   experiment_path: "/Shared/PLSA_Experiment"
 
+# Credentials will be injected via environment variables in Databricks Apps
 sql:
-  hostname: "<YOUR_DATABRICKS_HOST>"
-  http_path: "<YOUR_SQL_HTTP_PATH>"
-  token: "<YOUR_PERSONAL_ACCESS_TOKEN>"
+  hostname: "${DATABRICKS_HOST}"
+  http_path: "${DATABRICKS_HTTP_PATH}"
+  token: "${DATABRICKS_TOKEN}"

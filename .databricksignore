@@ -17,6 +17,7 @@ Thumbs.db
 
 # Databricks local state
 .bundle/
+.databricks/
 
 # Project artifacts
 brain/

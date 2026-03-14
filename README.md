@@ -1,88 +1,63 @@
-# Databricks-Multi-agent-workflow
+# Databricks-Multi-agent-workflow: Prada Localized Shop Analytics (PLSA)
 
-# Project: Prada Localized Shop Analytics (PLSA)
-**Version:** 1.0.0 (2026)
+**Version:** 2.0.0 (2026)
 **Owner:** Prada Group - Global AI Engineering
 
 ## 1. System Overview
-An enterprise multi-agent system designed for Prada Shop Managers to access localized inventory, sales, and visual merchandising data.
+An enterprise multi-agent system designed for Prada Shop Managers to access localized inventory, sales, and visual merchandising data using native Databricks tools.
 
 ## 2. Architecture Specifications
-- **Orchestrator:** Supervisor Agent (Mosaic AI Agent SDK) acting as a router.
+- **UI:** Streamlit Chatbot with expandable "thinking" steps for agent trace visibility.
+- **Orchestrator:** LLM-powered Supervisor (LangGraph) acting as an intelligent router.
 - **Sub-Agents:**
-    - `Inventory_Analyst`: Accesses Genie Spaces via Managed MCP.
-    - `Visual_Merchandiser`: Accesses Vector Search for guidelines.
-    - `Creative_Analyst`: Accesses Custom MCP for specialized Plotly visualizations.
+    - `Inventory_Analyst`: Accesses **Databricks Genie Spaces** for conversational data queries.
+    - `Visual_Merchandiser`: Accesses **Mosaic AI Vector Search** for display guidelines.
+    - `Creative_Analyst`: Accesses **Unity Catalog Functions** as tools for specialized SQL analysis.
 - **Infrastructure:**
-    - **Deployment:** Databricks Asset Bundles (DABs).
-    - **Hosting:** Model Serving (Agents) & Databricks Apps (Custom MCP).
-    - **Governance:** Unity Catalog (UC) for data, permissions, and model aliases (@prod).
+    - **Deployment:** Databricks Asset Bundles (DABs) as a **Databricks App**.
+    - **Governance:** Unity Catalog (UC) for data, functions, and model serving.
 
-## 3. Tooling & MCP Configurations
-- **Managed MCPs:**
-    - Genie Space: `catalog.schema.prada_genie`
-    - Vector Search: `catalog.schema.guidelines_index`
-- **Custom MCP:**
-    - Endpoint: `https://mcp-viz-prada.databricksapps.com/api/mcp`
-    - Functions: `generate_plotly_chart`, `calculate_kpi_delta`.
-
-## 4. CI/CD & MLOps Standards
-- **Evaluation:** Gated by MLflow "LLM-as-a-judge" on Golden Datasets.
-- **Observability:**
-    - MLflow Traces (30-day UI retention).
-    - Inference Tables (Indefinite Delta retention in `catalog.monitoring.logs`).
-- **Drift Detection:** Managed via Lakehouse Monitoring on the Inference Tables.
-
-## 5. Development Instructions for Genie
-1. Always use **Python 3.11+** and **FastMCP** for server development.
-2. Deployment configurations must be strictly defined in `databricks.yml`.
-3. All agents must include `mlflow.trace` instrumentation.
-4. UI components are built exclusively with **Streamlit**.
-
----
-
-## 6. Project Structure & Deployment Guide
+## 3. Project Structure
 
 ```
 Databricks-Multi-agent-workflow/
 ├── README.md
-├── databricks.yml              # DAB configuration (assets, targets, permissions)
-├── bundle/                     # DAB bundle packaging
-│   ├── mcp_server/             # Custom MCP FastMCP server code
-│   ├── agents/                 # Multi-agent architecture (Supervisor & Sub-agents)
-│   ├── streamlit_ui/           # Streamlit UI components
-│   └── utils/                  # Shared utilities, MLflow instrumentation
+├── databricks.yml              # DAB configuration (Databricks App)
+├── config.yaml                 # Agent & Tool configurations (Genie ID, VS Index, etc.)
+├── requirements.txt
 ├── src/                        # Application source code
-│   ├── orchestrator.py         # Orchestrator main logic
-│   ├── agents/                 # Sub-agents implementations (Inventory, Merchandiser, Creative)
+│   ├── app.py                  # Streamlit Chatbot UI
+│   ├── orchestrator.py         # Multi-agent supervisor & LangGraph workflow
+│   ├── agents/                 # Sub-agents implementations
 │   │   ├── inventory_analyst.py
 │   │   ├── visual_merchandiser.py
 │   │   ├── creative_analyst.py
-│   │   └── ...
-│   ├── mcp/                    # Custom/Managed MCP client code
-│   └── utils/                  # Domain/business utilities, metrics, helpers
+│   └── utils/                  # Shared utilities (config_loader, etc.)
 ├── setup/
-│   ├── DDL.md                  # DDL scripts: create catalogs, schemas, example tables/data
-│   └── deploy_instructions.md  # Step-by-step deployment instructions (catalog/schema/table setup)
+│   ├── DDL.sql                 # SQL DDLs for mocking tables and guidelines
+│   └── deploy_instructions.md
 └── .gitignore
 ```
 
-- **src/** contains all core application code, including orchestrator logic, agent submodules, MCP clients, and supporting utilities.
-- Assets in **bundle/** are used for DAB packaging and deployment.
+## 4. Deployment with Databricks Asset Bundles
+The project is deployed as a Databricks App. 
 
-### Deployment with Databricks Asset Bundles
-- Define all assets (notebooks, clusters, jobs, tables) in `databricks.yml`.
-- Package using DABs to ensure environment, permissions, and dependencies are reproducible for Databricks/AWS.
+1. **Prerequisites:**
+   - Databricks CLI configured.
+   - Access to a Genie Space, Vector Search endpoint, and UC functions.
 
-### Table Creation & Example Data
-- See [setup/DDL.md](#file-DDL.md) for SQL DDLs to create catalogs, schemas, tables (prada_genie, guidelines_index, monitoring.logs).
-- Includes example INSERTs for demo/test purposes.
+2. **Deploy:**
+   ```bash
+   databricks bundle deploy -t dev
+   ```
 
-### Setup Instructions
-- Complete workflow to provision Unity Catalogs and Schemas in [setup/deploy_instructions.md](#file-deploy_instructions.md).
-    - Step-by-step Databricks CLI commands (or UI prompts)
-    - Guidance on asset deployment, table population, and permissions
+3. **Run:**
+   The Streamlit app will be hosted as a Databricks App in your workspace.
 
----
+## 5. Observability
+- **MLflow Traces:** Every agent execution and tool call is automatically instrumented with `mlflow.trace`.
+- **Thinking UI:** The Streamlit app provides a real-time visualization of the agent orchestration steps.
 
-For further details, refer to the respective files in the `setup/` directory. For asset bundle specifics, see the main `databricks.yml`.
+
+databricks sync . /Workspace/Users/fioriofederico99@gmail.com/plsa-app
+databricks apps deploy plsa-app --source-code-path /Workspace/Users/fioriofederico99@gmail.com/plsa-app/src

@@ -1,47 +1,47 @@
 import mlflow
-from src.utils.config_loader import CONFIG
-from databricks import sql
+from utils.config_loader import CONFIG, get_ws_client
+from databricks_langchain.uc_ai import UCFunctionToolkit
+from databricks_langchain import ChatDatabricks
+from langchain.agents import create_tool_calling_agent, AgentExecutor
+from langchain import hub
 
-# Actual table interrogation and creative analysis code
-
+@mlflow.trace(name="Creative_Analyst_UC")
 def creative_analyst_node(state):
-    """LangGraph node for creative visualizations and table interrogation."""
+    """LangGraph node for creative analysis using Unity Catalog functions as tools."""
     query = state.get("query", "")
-    catalog = CONFIG['creative_analyst'].get('catalog', 'prada_catalog')
-    schema = CONFIG['creative_analyst'].get('schema', 'plsa')
-    mcp_endpoint = CONFIG['creative_analyst'].get('mcp_endpoint', '')
+    functions = CONFIG["agents"]["creative_analyst"]["uc_functions"]
+    model_name = CONFIG["agents"]["supervisor"]["model"]
     
-    with mlflow.trace(name="Creative_Analyst_Viz") as trace:
-        print(f"Creative Analyst processing: {query}")
-        result_messages = []
-        try:
-            # Connect to Databricks SQL endpoint (serverless)
-            with sql.connect(server_hostname=CONFIG['sql']['hostname'], http_path=CONFIG['sql']['http_path'],
-                            access_token=CONFIG['sql']['token']) as conn:
-                cursor = conn.cursor()
-                # Example: Interrogate products table
-                cursor.execute(f"SELECT * FROM {catalog}.{schema}.products LIMIT 5")
-                products = cursor.fetchall()
-                result_messages.append(f"Sample products: {products}")
-                # Example: Interrogate sales table
-                cursor.execute(f"SELECT * FROM {catalog}.{schema}.sales LIMIT 5")
-                sales = cursor.fetchall()
-                result_messages.append(f"Sample sales: {sales}")
-                # Example: Query inventory
-                cursor.execute(f"SELECT * FROM {catalog}.{schema}.inventory LIMIT 5")
-                inventory = cursor.fetchall()
-                result_messages.append(f"Sample inventory: {inventory}")
-                # Example: Query employees
-                cursor.execute(f"SELECT * FROM {catalog}.{schema}.employees LIMIT 5")
-                employees = cursor.fetchall()
-                result_messages.append(f"Sample employees: {employees}")
-                # Optional: guidelines index
-                cursor.execute(f"SELECT * FROM {catalog}.{schema}.guidelines_index LIMIT 2")
-                guidelines = cursor.fetchall()
-                result_messages.append(f"Sample guidelines: {guidelines}")
-        except Exception as e:
-            result_messages.append(f"Error interrogating tables: {str(e)}")
-        # Compose assistant response
-        res = f"Creative analysis for {query}:\n" + "\n".join(result_messages)
-        state["messages"].append({"role": "assistant", "content": res, "name": "Creative_Analyst"})
+    print(f"Creative Analyst using tools: {functions}")
+    
+    try:
+        # 1. Load UC functions as tools
+        from unitycatalog.ai.databricks import DatabricksFunctionClient
+        uc_client = DatabricksFunctionClient(workspace_client=get_ws_client())
+        toolkit = UCFunctionToolkit(
+            function_names=functions,
+            client=uc_client
+        )
+        tools = toolkit.get_tools()
+        
+        # 2. Initialize LLM
+        llm = ChatDatabricks(endpoint=model_name)
+        
+        # 3. Create Agent
+        prompt = hub.pull("hwchase17/openai-functions-agent")
+        agent = create_tool_calling_agent(llm, tools, prompt)
+        agent_executor = AgentExecutor(agent=agent, tools=tools, verbose=True)
+        
+        # 4. Run Agent
+        result = agent_executor.invoke({"input": query})
+        res = result["output"]
+        
+    except Exception as e:
+        res = f"Error in creative analysis: {str(e)}"
+        
+    state["messages"].append({
+        "role": "assistant", 
+        "content": res, 
+        "name": "Creative_Analyst"
+    })
     return state
