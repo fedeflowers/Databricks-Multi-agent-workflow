@@ -10,11 +10,32 @@ agents:
     model: "databricks-meta-llama-3-1-70b-instruct"
   inventory_analyst:
     genie_space: "catalog.schema.prada_genie"
+    mcp_tool: "https://mcp-managed-prada.databricksapps.com/api/query_inventory"
   visual_merchandiser:
     vector_search_index: "catalog.schema.guidelines_index"
+    mcp_tool: "https://mcp-managed-prada.databricksapps.com/api/query_guidelines"
   creative_analyst:
     mcp_endpoint: "https://mcp-viz-prada.databricksapps.com/api/mcp"
+    catalog: "prada_catalog"
+    schema: "plsa"
+    tables:
+      - products
+      - sales
+      - inventory
+      - employees
+      - guidelines_index
+    mcp_tools:
+      products: "https://mcp-managed-prada.databricksapps.com/api/query_products"
+      sales: "https://mcp-managed-prada.databricksapps.com/api/query_sales"
+      inventory: "https://mcp-managed-prada.databricksapps.com/api/query_inventory"
+      employees: "https://mcp-managed-prada.databricksapps.com/api/query_employees"
+      guidelines_index: "https://mcp-managed-prada.databricksapps.com/api/query_guidelines"
 
 mlflow:
   tracking_uri: "databricks"
   experiment_path: "/Shared/PLSA_Experiment"
+
+sql:
+  hostname: "<YOUR_DATABRICKS_HOST>"
+  http_path: "<YOUR_SQL_HTTP_PATH>"
+  token: "<YOUR_PERSONAL_ACCESS_TOKEN>"

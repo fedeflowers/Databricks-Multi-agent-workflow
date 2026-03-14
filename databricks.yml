@@ -3,9 +3,49 @@
 
 bundle:
   name: Databricks-Multi-agent-workflow
+  version: 1.0.0
+  description: Multi-agent workflow with MCP server for table interrogation
+
+assets:
+  mcp_server:
+    type: python_app
+    script: bundle/mcp_server/mcp_server.py
+    environment:
+      python: 3.11
+      requirements:
+        - fastapi
+        - uvicorn
+        - pydantic
+        - databricks-sql-connector
+    serving:
+      compute_kind: serverless
+      app_kind: REST
+      endpoints:
+        - /api/query_products
+        - /api/query_sales
+        - /api/query_inventory
+        - /api/query_employees
+        - /api/query_guidelines
+    environment_variables:
+      PRADA_CATALOG: prada_catalog
+      PRADA_SCHEMA: plsa
+      DATABRICKS_HOST: ${secrets.db_host}
+      DATABRICKS_HTTP_PATH: ${secrets.db_http_path}
+      DATABRICKS_TOKEN: ${secrets.db_token}
+    permissions:
+      - principal: managers
+        level: CAN_RUN
+      - principal: ai_engineers
+        level: CAN_VIEW
 
 targets:
   dev:
     workspace:
       host: https://<workspace-instance>.cloud.databricks.com
-    # Define assets and variables for the dev target here
+    assets:
+      - mcp_server
+    variables:
+      secrets:
+        db_host: <YOUR_DATABRICKS_HOST>
+        db_http_path: <YOUR_SQL_HTTP_PATH>
+        db_token: <YOUR_PERSONAL_ACCESS_TOKEN>
